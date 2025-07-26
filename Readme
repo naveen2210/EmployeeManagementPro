@@ -1,0 +1,102 @@
+EmployeeManagementPro is an ASP.NET Core Web API project for managing employee data, statistics, and activities. 
+It supports CRUD operations, PDF generation, and department distribution.
+
+Project Overview
+This project provides RESTful API endpoints for:
+•	Managing employee directories
+•	Handling employee statistics
+•	Tracking recent activities
+•	Managing user authentication
+•	Generating PDF reports using QuestPDF
+Main Components
+•	Controllers:
+Handle HTTP requests and responses.
+•	EmployeeDirectoryController: Manages employee directory and PDF export.
+•	employeeStatsController: Handles employee statistics.
+•	departmentDistributionController: Manages department data.
+•	userLoginController: Manages user authentication.
+•	recentActivitiesController: Tracks recent employee activities.
+•	BLL (Business Logic Layer):
+Contains business rules and logic.
+•	employeeStatsBLL: Logic for employee statistics.
+•	employeedirectory: Logic for employee directory.
+•	DAL (Data Access Layer):
+Handles database operations.
+•	EmployeeDirectoryDAL: Data access for employee directory.
+•	DTO (Data Transfer Objects):
+Structures for transferring data.
+•	EmployeeDirectoryDTO: Employee directory data.
+•	userLoginDTO: User login data.
+•	PDF Generation:
+Uses QuestPDF to generate PDF reports for employee data.
+Example API Endpoints
+•	GET /api/EmployeeDirectory/GetEmployeeDirectory
+Returns all employees.
+•	GET /api/EmployeeDirectory/DownloadEmployeeDirectoryPdf
+Downloads employee directory as PDF.
+EmployeeDirectoryController.cs Description
+This controller manages API endpoints for the employee directory.
+It provides two main functionalities:
+•	Retrieving the employee directory as a list of employee records in JSON format.
+•	Generating a downloadable PDF report of the directory using QuestPDF.
+The controller interacts with the business logic layer to fetch employee data and formats it for both web and document output. 
+Each employee record includes details such as ID, name, date of birth, gender, contact information, department, and recent activities.
+
+MYSQL TABLES:
+--Employee Details
+CREATE TABLE `employeedetails` (
+  `emp_Id` int NOT NULL,
+  `emp_Img` blob,
+  `emp_Name` varchar(50) DEFAULT NULL,
+  `emp_Dob` date DEFAULT NULL,
+  `emp_Gender` varchar(12) DEFAULT NULL,
+  `emp_Email` varchar(30) DEFAULT NULL,
+  `emp_Phone` varchar(13) DEFAULT NULL,
+  `emp_City` varchar(50) DEFAULT NULL,
+  `emp_AadaarNumber` varchar(20) DEFAULT NULL,
+  `emp_PanCard` varchar(30) DEFAULT NULL,
+  `emp_Role` varchar(50) DEFAULT NULL,
+  `depart_Id` int DEFAULT NULL,
+  PRIMARY KEY (`emp_Id`),
+  KEY `departments` (`depart_Id`),
+  CONSTRAINT `departments` FOREIGN KEY (`depart_Id`) REFERENCES `department`.`departments` (`depart_Id`)
+) 
+--Dapartment table
+CREATE TABLE `departments` (
+  `depart_Id` int NOT NULL,
+  `dapart_name` varchar(70) DEFAULT NULL,
+  `totalEmployees` int DEFAULT NULL,
+  PRIMARY KEY (`depart_Id`)
+) 
+--Employee Activities
+CREATE TABLE `emoloyeeactivites` (
+  `SerialNumber` int NOT NULL AUTO_INCREMENT,
+  `emp_Id` int NOT NULL,
+  `emp_Name` varchar(70) DEFAULT NULL,
+  `recent_activities` varchar(200) DEFAULT NULL,
+  `emp_role` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`SerialNumber`),
+  KEY `emp_Id` (`emp_Id`),
+  CONSTRAINT `emoloyeeactivites_ibfk_1` FOREIGN KEY (`emp_Id`) REFERENCES `employeemanagement`.`employeedetails` (`emp_Id`)
+) 
+--employee stats
+CREATE TABLE `enployeestats` (
+  `employeeSNumber` int NOT NULL AUTO_INCREMENT,
+  `emp_Id` int DEFAULT NULL,
+  `emp_Name` varchar(70) DEFAULT NULL,
+  `performance` varchar(70) DEFAULT NULL,
+  `employeeRole` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`employeeSNumber`),
+  KEY `emp_Id` (`emp_Id`),
+  CONSTRAINT `enployeestats_ibfk_1` FOREIGN KEY (`emp_Id`) REFERENCES `employeemanagement`.`employeedetails` (`emp_Id`)
+) 
+--Employee Directory
+SELECT ed.emp_Id as empId, ed.emp_Name As EmployeeName, ed.emp_Dob AS DateOfBirth, ed.emp_Gender As Gender,
+ ed.emp_Email AS Email, ed.emp_Phone AS phone, ed.emp_City AS city,
+ ed.emp_AadaarNumber AS aadhaarNumber, ed.emp_PanCard AS PanCardNumber, ed.emp_Role AS employeeRole,
+ d.depart_Id AS departmentId, d.dapart_name AS departmentName,RA.recent_activities AS RecentActivities
+ FROM employeemanagement.employeedetails AS ed 
+ LEFT JOIN department.departments AS d ON ed.depart_Id = d.depart_Id
+ LEFT JOIN department.emoloyeeActivites AS RA ON ed.emp_Id = ra.emp_Id
+ LEFT JOIN department.enployeeStats AS ES ON ed.emp_Id = ES.emp_Id;
+
